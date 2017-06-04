@@ -24,14 +24,12 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
  */
-
 /**
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Mailing_Controller_Send extends CRM_Core_Controller {
-
   /**
    * Class constructor.
    *
@@ -43,7 +41,6 @@ class CRM_Mailing_Controller_Send extends CRM_Core_Controller {
    */
   public function __construct($title = NULL, $action = CRM_Core_Action::NONE, $modal = TRUE) {
     parent::__construct($title, $modal, NULL, FALSE, TRUE);
-
     // New:            civicrm/mailing/send?reset=1
     // Re-use:         civicrm/mailing/send?reset=1&mid=%%mid%%
     // Continue:       civicrm/mailing/send?reset=1&mid=%%mid%%&continue=true
@@ -64,9 +61,43 @@ class CRM_Mailing_Controller_Send extends CRM_Core_Controller {
       CRM_Utils_System::redirect($redirect);
     }
     if ($mid && !$continue) {
-      $clone = civicrm_api3('Mailing', 'clone', array('id' => $mid));
-      CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mailing/' . $clone['id']));
+		
+		
+		 $parm= array(
+					'entity_table' =>'civicrm_mailing',
+					'entity_id' => $mid
+				);
+				$attachment =  civicrm_api3('attachment','get',$parm);
+				$clone      =  civicrm_api3('Mailing', 'clone', array('id' => $mid));
+       $files      = $attachment['values'];
+	   
+	   foreach($files as $file){
+		 $uniqueID = uniqid();
+		 $fileArray = explode('.',$file['path']);
+		 $target_file = $fileArray[0].$uniqueID.".".$fileArray[1];
+	     
+		 if(copy($file['path'],$target_file)){ 
+	            $attachedFiles[]= array(
+						'entity_table' => $file['entity_table'],
+						'entity_id' => $clone['id'],
+						'name' => $file['name'],
+						'mime_type' => $file['mime_type'],
+						'options' => array(
+						'move-file' => $target_file
+						),
+					);
+	       }
+	   }
+     if(isset($attachedFiles)){
+		 
+	  if(count($attachedFiles)>0){
+	    foreach($attachedFiles as $attachedFile){
+		$result = civicrm_api3('Attachment', 'create',$attachedFile);
+	    }
+	 }  
+	}
+	
+	  CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mailing/' . $clone['id']));
     }
   }
-
 }

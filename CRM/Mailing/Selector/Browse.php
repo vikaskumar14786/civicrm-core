@@ -431,8 +431,12 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
             'fe' => TRUE,
           );
         }
-
-        $rows[$key]['action'] = CRM_Core_Action::formLink(
+		 
+		 if ($this->_parent->_unscheduled) {
+            $rows[$key]['reuse'] = url('/civicrm/mailing/send?'.'mid='.$row['id'].'&reset=1');
+		 }   
+		
+		$rows[$key]['action'] = CRM_Core_Action::formLink(
           $validLinks,
           $actionMask,
           array('mid' => $row['id']),

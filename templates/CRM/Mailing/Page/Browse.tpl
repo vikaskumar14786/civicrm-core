@@ -78,7 +78,7 @@
        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
           <td class="crm-mailing-campaign">{$row.campaign}</td>
       {/if}
-        <td>{$row.action|replace:'xx':$row.id}</td>
+        <td>{$row.action|replace:'xx':$row.id}{if $row.reuse}<a href="{$row.reuse|replace:'xx':$row.id}">Re-Use</a> {/if}</td>
       </tr>
       {/foreach}
     </table>
